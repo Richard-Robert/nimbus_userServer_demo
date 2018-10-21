@@ -69,3 +69,9 @@ app.put(
   AuthController.isAuthenticatedAgent,
   agents.addComment
 );
+
+app.put(
+  '/api/updateComplaintStatus',
+  AuthController.isAuthenticatedAgent,
+  agents.changeStatus
+);
