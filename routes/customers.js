@@ -49,25 +49,50 @@ function addComment(req, res) {
   });
 }
 
-function addComplaint(req, res) {
+function logComplaint(req, res) {
+  var token = req.headers['x-access-token'];
   var complaintRequest = req.body;
   //Create new complaint object
-  var newComplaint = new Complaint();
-  newComplaint.cust_id = complaintRequest.custId;
-  newComplaint.status = complaintRequest.status;
-  newComplaint.date_created = complaintRequest.dateCreated;
-  newComplaint.date_updated = complaintRequest.dateUpdated;
-  newComplaint.complaint_heading = complaintRequest.complaintHeading;
-  newComplaint.complaint_description = complaintRequest.complaintDescription;
-  newComplaint.comments = complaintRequest.comments;
-  //save new Complaint details to DB
-  newComplaint.save(function(err, data) {
-    if (data) res.send(data);
-    else if (err) res.status(400).send('User name or email already exists');
+  jwt.verify(token, config.secret, function(err, decoded) {
+    var newComplaint = new Complaint();
+    helper
+      .getNextSequenceId(Counter, 'complaintID')
+      .then(function(complaintId) {
+        if (complaintId) {
+          newComplaint.id = complaintId;
+          newComplaint.cust_id = decoded.id;
+          newComplaint.status = 1;
+          newComplaint.date_created = complaintRequest.dateCreated;
+          newComplaint.date_updated = complaintRequest.dateUpdated;
+          newComplaint.heading = complaintRequest.complaintHeading;
+          newComplaint.description = complaintRequest.complaintDescription;
+          newComplaint.comments = [];
+          //save new Complaint details to DB
+          newComplaint.save(function(err, data) {
+            if (data) {
+              console.log(newComplaint);
+              helper.setNextSequenceId(Counter, 'userID');
+              helper
+                .getAllComplaints(newComplaint.cust_id)
+                .then(function(data) {
+                  console.log(data);
+                  res.status(200).send(data);
+                });
+            } else if (err) res.status(400).send(err);
+          });
+        } else {
+          res
+            .status(500)
+            .send(
+              'There was a problem accessing the DB , Please try again' + err
+            );
+        }
+      });
   });
 }
 
 module.exports = {
   getCustomerComplaints: getCustomerComplaints,
-  addComment: addComment
+  addComment: addComment,
+  logComplaint: logComplaint
 };

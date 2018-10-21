@@ -59,7 +59,10 @@ router.post('/registerCustomer', function(req, res) {
 router.post('/login', function(req, res) {
   const loginRequest = req.body;
   //create new Customer object
-  User.findOne({ email: loginRequest.email }, function(err, data) {
+  User.findOne({ email: loginRequest.email.toLowerCase() }, function(
+    err,
+    data
+  ) {
     if (err) {
       return res.status(400).send('Invalid credentials');
     }

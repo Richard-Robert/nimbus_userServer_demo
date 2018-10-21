@@ -75,3 +75,9 @@ app.put(
   AuthController.isAuthenticatedAgent,
   agents.changeStatus
 );
+
+app.put(
+  '/api/logComplaint',
+  AuthController.isAuthenticatedCustomer,
+  customers.logComplaint
+);
