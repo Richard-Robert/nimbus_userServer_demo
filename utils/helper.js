@@ -17,24 +17,19 @@ function setNextSequenceId(Model, sequenceName) {
   );
 }
 async function getNextSequenceId(Model, sequenceName) {
-  var nextSequenceId;
-  var callBack = function(err, data) {
-    nextSequenceId = data.sequence_value + 1;
-  };
-  await Model.findOne({ id: sequenceName }, callBack);
-  return nextSequenceId;
+  const result = await Model.findOne({ id: sequenceName });
+  return result.sequence_value+1;
 }
 
 async function getAllCustomers() {
   const customers = [];
   //Find all customers from DB
-  await User.find({}, function(err, data) {
-    data.forEach(function(obj) {
-      if (obj.type === CUSTOMER) {
-        obj.password = '0';
-        customers.push(obj);
-      }
-    });
+  const result = await User.find({});
+  result.forEach(function(obj) {
+    if (obj.type === CUSTOMER) {
+      obj.password = '0';
+      customers.push(obj);
+    }
   });
   return customers;
 }
@@ -42,15 +37,11 @@ async function getAllComplaints(userId) {
   var complaints = [];
   //Find all complaints of given user
   if (userId) {
-    await Complaint.find({ cust_id: userId }, function(err, data) {
-      complaints = data;
-    });
+   complaints = await Complaint.find({ cust_id: userId });
   }
   //Find all complaints of all users
   else {
-    await Complaint.find({}, function(err, data) {
-      complaints = data;
-    });
+     complaints = await Complaint.find({});
   }
   return complaints;
 }
