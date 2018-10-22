@@ -20,32 +20,31 @@ function getCustomerComplaints(req, res) {
   });
 }
 
-function addComment(req, res) {
+async function addComment(req, res) {
   var complaintId = req.body.complaintId;
   var newComment = req.body.newComment;
   var newCommentTime = req.body.commentTime;
   var emailId;
   var newCommentObject = {};
   var token = req.headers['x-access-token'];
-  jwt.verify(token, config.secret, function(err, decoded) {
-    User.findOne({ id: decoded.id }, function(err, user) {
-      emailId = user.email;
-      newCommentObject['comment'] = newComment;
-      newCommentObject['date'] = newCommentTime;
-      newCommentObject['email'] = emailId;
-      Complaint.updateOne(
-        { id: complaintId },
-        {
-          $push: { comments: newCommentObject }
-        },
-        function(err, complaint) {
-          console.log(user.id);
-          helper.getAllComplaints(user.id).then(function(data) {
-            res.status(200).send(data);
-          });
-        }
-      );
-    });
+  jwt.verify(token, config.secret, async function(err, decoded) {
+  const user = await User.findOne({ id: decoded.id });
+    emailId = user.email;
+    newCommentObject['comment'] = newComment;
+    newCommentObject['date'] = newCommentTime;
+    newCommentObject['email'] = emailId;
+    Complaint.updateOne(
+      { id: complaintId },
+      {
+        $push: { comments: newCommentObject }
+      },
+      function(err, complaint) {
+        console.log(user.id);
+        helper.getAllComplaints(user.id).then(function(data) {
+          res.status(200).send(data);
+        });
+      }
+    );
   });
 }
 
